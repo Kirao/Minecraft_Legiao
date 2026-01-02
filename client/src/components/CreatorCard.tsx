@@ -25,12 +25,18 @@ interface CreatorCardProps {
 // Ícone customizado para Kick (já que não existe em lucide-react)
 const KickIcon: FC<{ className?: string }> = ({ className }) => (
   <svg
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    className={className}
     xmlns="http://www.w3.org/2000/svg"
+    fill="currentColor"
+    viewBox="0 0 24 24"
+    className={className}
+    width="24"
+    height="24"
   >
-    <path d="M8 2H2v12h6V2zm10 0h-6v12h6V2zm6 0h-6v12h6V2zM2 16h20v6H2v-6z" />
+    <path
+      d="M2.86957 1.5h6.84782v4.56522H12V3.78261h2.2826V1.5h6.8478v6.84783h-2.2826v2.28257h-2.2826v2.7392h2.2826v2.2826h2.2826V22.5h-6.8478v-2.2826H12v-2.2826H9.71739V22.5H2.86957v-21Z"
+      strokeLinejoin="round"
+      strokeWidth={1}
+    />
   </svg>
 );
 
@@ -66,7 +72,7 @@ export default function CreatorCard({
               href={youtubeUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-600 hover:bg-orange-500 hover:text-white transition-all duration-200 hover:scale-110"
+              className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-600 hover:bg-red-600 hover:text-white transition-all duration-200 hover:scale-110"
               aria-label="Canal YouTube"
               title="YouTube"
             >
@@ -79,7 +85,7 @@ export default function CreatorCard({
               href={kickUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-600 hover:bg-orange-500 hover:text-white transition-all duration-200 hover:scale-110"
+              className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-600 hover:bg-lime-500 hover:text-white transition-all duration-200 hover:scale-110"
               aria-label="Canal Kick"
               title="Kick"
             >
@@ -92,7 +98,7 @@ export default function CreatorCard({
               href={twitchUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-600 hover:bg-orange-500 hover:text-white transition-all duration-200 hover:scale-110"
+              className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-600 hover:bg-purple-600 hover:text-white transition-all duration-200 hover:scale-110"
               aria-label="Canal Twitch"
               title="Twitch"
             >
