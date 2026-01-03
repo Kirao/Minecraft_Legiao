@@ -240,7 +240,7 @@ export default function Home() {
 
       <footer className="bg-gray-50 border-t border-gray-100 mt-16">
         <div className="container py-8 text-center text-gray-600 text-sm">
-          <p>© 2024 Minecraft Legião.</p>
+          <p>By Kirao</p>
         </div>
       </footer>
     </div>
