@@ -1,42 +1,44 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-let accessToken: string | null = null;
-
-async function getAccessToken() {
-  if (accessToken) return accessToken;
-
-  const res = await fetch(
-    `https://id.twitch.tv/oauth2/token?client_id=${process.env.TWITCH_CLIENT_ID}&client_secret=${process.env.TWITCH_CLIENT_SECRET}&grant_type=client_credentials`,
-    { method: 'POST' }
-  );
-
-  const data = await res.json();
-  accessToken = data.access_token;
-  return accessToken;
-}
-
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const { username } = req.query;
+export default async function handler(
+  req: VercelRequest,
+  res: VercelResponse
+) {
+  const username = req.query.username as string;
 
   if (!username) {
-    return res.status(400).json({ error: 'username obrigatório' });
+    return res.status(400).json({ online: false });
   }
 
-  const token = await getAccessToken();
+  try {
+    const clientId = process.env.TWITCH_CLIENT_ID!;
+    const clientSecret = process.env.TWITCH_CLIENT_SECRET!;
 
-  const twitchRes = await fetch(
-    `https://api.twitch.tv/helix/streams?user_login=${username}`,
-    {
-      headers: {
-        'Client-ID': process.env.TWITCH_CLIENT_ID!,
-        'Authorization': `Bearer ${token}`,
-      },
-    }
-  );
+    const tokenRes = await fetch('https://id.twitch.tv/oauth2/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `client_id=${clientId}&client_secret=${clientSecret}&grant_type=client_credentials`,
+    });
 
-  const data = await twitchRes.json();
+    const tokenData = await tokenRes.json();
 
-  res.status(200).json({
-    online: data.data && data.data.length > 0,
-  });
+    const streamRes = await fetch(
+      `https://api.twitch.tv/helix/streams?user_login=${username}`,
+      {
+        headers: {
+          'Client-ID': clientId,
+          Authorization: `Bearer ${tokenData.access_token}`,
+        },
+      }
+    );
+
+    const streamData = await streamRes.json();
+
+    return res.status(200).json({
+      online: streamData.data?.length > 0,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ online: false });
+  }
 }
