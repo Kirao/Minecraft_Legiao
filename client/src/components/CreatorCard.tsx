@@ -1,28 +1,15 @@
 import { Youtube, Twitch } from 'lucide-react';
-import { FC } from 'react';
-
-/**
- * Design Philosophy: Minimalismo Moderno com Foco em Conteúdo
- * - Foto em destaque (foco principal)
- * - Tipografia clara (Poppins Bold para nome)
- * - Ícones com hover suave (elevação e mudança de cor)
- * - Sombra sutil para profundidade
- */
+import { FC, useEffect, useState } from 'react';
 
 interface CreatorCardProps {
-  /** URL da foto do criador */
   imageUrl: string;
-  /** Nome do criador */
   name: string;
-  /** URL do canal YouTube (opcional) */
   youtubeUrl?: string;
-  /** URL do canal Kick (opcional) */
   kickUrl?: string;
-  /** URL do canal Twitch (opcional) */
   twitchUrl?: string;
 }
 
-// Ícone customizado para Kick (já que não existe em lucide-react)
+// Ícone customizado para Kick
 const KickIcon: FC<{ className?: string }> = ({ className }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -47,10 +34,30 @@ export default function CreatorCard({
   kickUrl,
   twitchUrl,
 }: CreatorCardProps) {
+  const [isLive, setIsLive] = useState(false);
+
+  useEffect(() => {
+    if (!twitchUrl) return;
+
+    const username = twitchUrl.split('twitch.tv/')[1];
+    if (!username) return;
+
+    fetch(`/api/twitch-status?username=${username}`)
+      .then((res) => res.json())
+      .then((data) => setIsLive(Boolean(data.online)))
+      .catch(() => setIsLive(false));
+  }, [twitchUrl]);
+
   return (
     <div className="group flex flex-col bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300">
-      {/* Imagem do Criador */}
+      {/* Imagem */}
       <div className="relative overflow-hidden bg-gray-100 aspect-square">
+        {isLive && (
+          <span className="absolute top-2 left-2 z-10 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse">
+            🔴 AO VIVO
+          </span>
+        )}
+
         <img
           src={imageUrl}
           alt={name}
@@ -58,14 +65,12 @@ export default function CreatorCard({
         />
       </div>
 
-      {/* Informações do Criador */}
+      {/* Infos */}
       <div className="flex flex-col items-center justify-center gap-3 p-4">
-        {/* Nome */}
         <h3 className="text-center text-lg font-bold text-gray-900 line-clamp-2">
           {name}
         </h3>
 
-        {/* Ícones de Redes Sociais */}
         <div className="flex gap-3">
           {youtubeUrl && (
             <a
@@ -73,7 +78,6 @@ export default function CreatorCard({
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-600 hover:bg-red-600 hover:text-white transition-all duration-200 hover:scale-110"
-              aria-label="Canal YouTube"
               title="YouTube"
             >
               <Youtube size={20} />
@@ -86,7 +90,6 @@ export default function CreatorCard({
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-600 hover:bg-lime-500 hover:text-white transition-all duration-200 hover:scale-110"
-              aria-label="Canal Kick"
               title="Kick"
             >
               <KickIcon className="w-5 h-5" />
@@ -99,7 +102,6 @@ export default function CreatorCard({
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-600 hover:bg-purple-600 hover:text-white transition-all duration-200 hover:scale-110"
-              aria-label="Canal Twitch"
               title="Twitch"
             >
               <Twitch size={20} />
