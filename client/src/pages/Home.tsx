@@ -1,5 +1,7 @@
 import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import CreatorCard from '@/components/CreatorCard';
+import { MessageSquare, User } from 'lucide-react';
 
 interface Creator {
   id: string;
@@ -47,6 +49,7 @@ const CREATORS_DATA: Creator[] = [
 export default function Home() {
   const [filter, setFilter] = useState<'all' | 'online'>('all');
   const [liveStatus, setLiveStatus] = useState<Record<string, boolean>>({});
+  const [showContact, setShowContact] = useState(false);
 
   const handleLiveStatusChange = (id: string, isLive: boolean) => {
     setLiveStatus((prev) => ({ ...prev, [id]: isLive }));
@@ -56,48 +59,46 @@ export default function Home() {
 
   const sortedAndFilteredCreators = useMemo(() => {
     let list = [...CREATORS_DATA];
-    
-    // Ordenação Alfabética
     list.sort((a, b) => a.name.localeCompare(b.name));
-
-    // Filtro de Online
     if (filter === 'online') {
       list = list.filter((c) => liveStatus[c.id]);
     }
-
     return list;
   }, [filter, liveStatus]);
 
   return (
-    <div className="min-h-screen bg-white">
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
+    <div className="min-h-screen bg-gray-50/50">
+      <header className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
         <div className="container py-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
               Minecraft Legião
             </h1>
-            <p className="text-gray-500 text-sm mt-1">
-              {onlineCount} {onlineCount === 1 ? 'pessoa' : 'pessoas'} online agora
-            </p>
+            <div className="flex items-center gap-2 mt-1">
+              <span className={`w-2 h-2 rounded-full ${onlineCount > 0 ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`}></span>
+              <p className="text-gray-500 text-sm font-medium">
+                {onlineCount} {onlineCount === 1 ? 'pessoa' : 'pessoas'} online agora
+              </p>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+          <div className="flex items-center gap-2 bg-gray-100 p-1.5 rounded-xl">
             <button
               onClick={() => setFilter('all')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+              className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
                 filter === 'all'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-white text-gray-900 shadow-md scale-105'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
               }`}
             >
               Todos
             </button>
             <button
               onClick={() => setFilter('online')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${
+              className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center gap-2 ${
                 filter === 'online'
-                  ? 'bg-white text-red-600 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-white text-red-600 shadow-md scale-105'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
               }`}
             >
               <span className={`w-2 h-2 rounded-full bg-red-600 ${onlineCount > 0 ? 'animate-ping' : ''}`}></span>
@@ -108,32 +109,108 @@ export default function Home() {
       </header>
 
       <main className="container py-12">
-        {sortedAndFilteredCreators.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <motion.div 
+          layout
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+        >
+          <AnimatePresence mode='popLayout'>
             {sortedAndFilteredCreators.map((creator) => (
-              <CreatorCard 
-                key={creator.id} 
-                {...creator} 
-                onLiveStatusChange={(isLive) => handleLiveStatusChange(creator.id, isLive)}
-              />
+              <motion.div
+                key={creator.id}
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.3, type: "spring", stiffness: 260, damping: 20 }}
+              >
+                <CreatorCard 
+                  {...creator} 
+                  onLiveStatusChange={(isLive) => handleLiveStatusChange(creator.id, isLive)}
+                />
+              </motion.div>
             ))}
-          </div>
-        ) : (
-          <div className="text-center py-20">
-            <p className="text-gray-400 text-lg">Ninguém está online no momento. 😴</p>
-            <button 
-              onClick={() => setFilter('all')}
-              className="mt-4 text-purple-600 font-medium hover:underline"
-            >
-              Ver todos os participantes
-            </button>
-          </div>
+          </AnimatePresence>
+        </motion.div>
+
+        {sortedAndFilteredCreators.length === 0 && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-32"
+          >
+            <div className="bg-white p-8 rounded-3xl shadow-sm inline-block border border-gray-100">
+              <p className="text-gray-400 text-xl font-medium">Ninguém está online no momento. 😴</p>
+              <button 
+                onClick={() => setFilter('all')}
+                className="mt-6 px-8 py-3 bg-purple-600 text-white rounded-2xl font-bold hover:bg-purple-700 transition-colors shadow-lg shadow-purple-200"
+              >
+                Ver todos os participantes
+              </button>
+            </div>
+          </motion.div>
         )}
       </main>
 
-      <footer className="bg-gray-50 border-t border-gray-100 mt-16">
-        <div className="container py-8 text-center text-gray-600 text-sm">
-          <p>By Kirao</p>
+      <footer className="bg-white border-t border-gray-100 mt-24">
+        <div className="container py-12 flex flex-col items-center gap-6">
+          <button 
+            onClick={() => setShowContact(!showContact)}
+            className="group flex items-center gap-3 px-6 py-3 bg-gray-50 hover:bg-gray-100 rounded-2xl transition-all duration-300 border border-gray-100"
+          >
+            <span className="text-gray-600 font-bold group-hover:text-purple-600 transition-colors">By Kirao</span>
+            <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform">
+              <User size={16} />
+            </div>
+          </button>
+
+          <AnimatePresence>
+            {showContact && (
+              <motion.div
+                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                className="w-full max-w-sm bg-white rounded-3xl p-6 shadow-2xl border border-purple-100 relative overflow-hidden"
+              >
+                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-purple-500 to-pink-500"></div>
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    <img 
+                      src="https://github.com/Kirao.png" 
+                      alt="Kirao" 
+                      className="w-16 h-16 rounded-2xl object-cover shadow-md border-2 border-white"
+                    />
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></div>
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-bold text-gray-900">Kirao</h4>
+                    <p className="text-purple-600 text-sm font-semibold">Desenvolvedor</p>
+                  </div>
+                </div>
+                
+                <div className="mt-6 space-y-3">
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                    <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600">
+                      <MessageSquare size={20} />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">Discord</p>
+                      <p className="text-gray-900 font-mono font-bold">kirao_</p>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 bg-purple-50 rounded-xl border border-purple-100">
+                    <p className="text-sm text-purple-800 font-medium leading-relaxed">
+                      Precisa de ajuda com o site ou tem alguma sugestão? Me chama no Discord! 🚀
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <p className="text-gray-400 text-xs font-medium uppercase tracking-widest">
+            Minecraft Legião © 2026
+          </p>
         </div>
       </footer>
     </div>
