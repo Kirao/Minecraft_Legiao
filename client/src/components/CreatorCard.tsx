@@ -25,7 +25,7 @@ const KickIcon: FC<{ className?: string }> = ({ className }) => (
       strokeWidth={1}
     />
   </svg>
-);
+ );
 
 export default function CreatorCard({
   imageUrl,
@@ -89,8 +89,8 @@ export default function CreatorCard({
   }, [twitchUrl, youtubeUrl]);
 
   return (
-    <div className={`group flex flex-col bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 ${isLive ? 'ring-2 ring-red-500' : ''}`}>
-      <div className="relative overflow-hidden bg-gray-100 aspect-square">
+    <div className={`group flex flex-col bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 ${isLive ? 'ring-2 ring-red-500' : ''}`}>
+        <div className="relative overflow-hidden bg-gray-100 dark:bg-gray-700 aspect-square">
         <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
           {isTwitchLive && (
             <span className="flex items-center gap-1 bg-purple-600 text-white text-[10px] font-bold px-2 py-1 rounded-full animate-pulse shadow-md">
@@ -112,7 +112,7 @@ export default function CreatorCard({
       </div>
 
       <div className="flex flex-col items-center justify-center gap-3 p-4">
-        <h3 className="text-center text-lg font-bold text-gray-900 line-clamp-2">
+        <h3 className="text-center text-lg font-bold text-gray-900 dark:text-white line-clamp-2">
           {name}
         </h3>
 
@@ -122,7 +122,7 @@ export default function CreatorCard({
               href={youtubeUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className={`inline-flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 hover:scale-110 ${isYoutubeLive ? 'bg-red-600 text-white shadow-lg' : 'bg-gray-100 text-gray-600 hover:bg-red-600 hover:text-white'}`}
+              className={`inline-flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 hover:scale-110 ${isYoutubeLive ? 'bg-red-600 text-white shadow-lg' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-red-600 hover:text-white'}`}
               title="YouTube"
             >
               <Youtube size={20} />
@@ -134,7 +134,7 @@ export default function CreatorCard({
               href={kickUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-600 hover:bg-lime-500 hover:text-white transition-all duration-200 hover:scale-110"
+              className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-lime-500 hover:text-white transition-all duration-200 hover:scale-110"
               title="Kick"
             >
               <KickIcon className="w-5 h-5" />
@@ -146,7 +146,7 @@ export default function CreatorCard({
               href={twitchUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className={`inline-flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 hover:scale-110 ${isTwitchLive ? 'bg-purple-600 text-white shadow-lg' : 'bg-gray-100 text-gray-600 hover:bg-purple-600 hover:text-white'}`}
+              className={`inline-flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 hover:scale-110 ${isTwitchLive ? 'bg-purple-600 text-white shadow-lg' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-purple-600 hover:text-white'}`}
               title="Twitch"
             >
               <Twitch size={20} />
