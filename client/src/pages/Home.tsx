@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CreatorCard from '@/components/CreatorCard';
-import { User, X } from 'lucide-react';
+import { User, X, Sparkles } from 'lucide-react';
 
 // Ícone customizado do Discord
 const DiscordIcon = ({ className }: { className?: string }) => (
@@ -170,60 +170,74 @@ export default function Home() {
               {showContact && (
                 <motion.div
                   initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: -10, scale: 1 }}
+                  animate={{ opacity: 1, y: -12, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-72 bg-white rounded-3xl p-6 shadow-2xl border border-purple-100 z-[70]"
+                  className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-80 bg-white rounded-[2.5rem] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-purple-50 z-[70] overflow-hidden"
                 >
-                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-b border-r border-purple-100 rotate-45"></div>
+                  {/* Detalhe de gradiente no topo */}
+                  <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
                   
                   <button 
                     onClick={() => setShowContact(false)}
-                    className="absolute top-3 right-3 p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-400"
+                    className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-300 hover:text-gray-600"
                   >
-                    <X size={16} />
+                    <X size={18} />
                   </button>
 
                   <div className="flex flex-col items-center text-center">
-                    <div className="relative mb-3">
+                    <div className="relative mb-4">
+                      <div className="absolute inset-0 bg-purple-200 blur-2xl opacity-30 rounded-full"></div>
                       <img 
                         src="https://github.com/Kirao.png" 
                         alt="Kirao" 
-                        className="w-16 h-16 rounded-2xl object-cover shadow-lg border-2 border-white"
+                        className="relative w-20 h-20 rounded-[1.8rem] object-cover shadow-xl border-4 border-white"
                       />
-                      <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-4 border-white rounded-full shadow-sm"></div>
                     </div>
                     
-                    <h4 className="text-lg font-black text-gray-900">Kirao</h4>
-                    <p className="text-purple-600 font-bold text-[10px] uppercase tracking-widest">Contato</p>
+                    <h4 className="text-2xl font-black text-gray-900 tracking-tight">Kirao</h4>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <Sparkles size={12} className="text-purple-500" />
+                      <p className="text-purple-600 font-black text-[10px] uppercase tracking-[0.2em]">Desenvolvedor</p>
+                    </div>
                     
-                    <div className="w-full mt-4 space-y-3">
-                      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 text-left">
-                        <div className="w-10 h-10 rounded-lg bg-indigo-600 flex items-center justify-center text-white shrink-0 shadow-md shadow-indigo-100">
-                          <DiscordIcon className="w-6 h-6" />
+                    <div className="w-full mt-8 space-y-4">
+                      <div className="flex items-center gap-4 p-4 bg-gray-50/80 rounded-2xl border border-gray-100 text-left group/item hover:bg-white hover:shadow-md transition-all duration-300">
+                        <div className="w-12 h-12 rounded-xl bg-indigo-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-indigo-200 group-hover/item:scale-110 transition-transform">
+                          <DiscordIcon className="w-7 h-7" />
                         </div>
                         <div>
-                          <p className="text-[9px] text-gray-400 font-black uppercase tracking-tighter">Discord</p>
-                          <p className="text-gray-900 font-mono font-bold text-sm">.kirao</p>
+                          <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest">Discord</p>
+                          <p className="text-gray-900 font-mono font-bold text-lg">.kirao</p>
                         </div>
+                      </div>
+
+                      <div className="p-5 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl border border-purple-100/50">
+                        <p className="text-sm text-purple-900 font-bold leading-relaxed">
+                          Tem alguma ideia incrível ou precisa de ajuda com o site? Me chama no Discord! 🚀
+                        </p>
                       </div>
                     </div>
                   </div>
+
+                  {/* Setinha do balão */}
+                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-b border-r border-purple-50 rotate-45"></div>
                 </motion.div>
               )}
             </AnimatePresence>
 
             <button 
               onClick={() => setShowContact(!showContact)}
-              className="group flex items-center gap-3 px-6 py-3 bg-gray-50 hover:bg-gray-100 rounded-2xl transition-all duration-300 border border-gray-100"
+              className="group flex items-center gap-3 px-8 py-4 bg-white hover:bg-gray-50 rounded-2xl transition-all duration-300 border border-gray-100 shadow-sm hover:shadow-md active:scale-95"
             >
-              <span className="text-gray-600 font-bold group-hover:text-purple-600 transition-colors">By Kirao</span>
-              <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform">
+              <span className="text-gray-600 font-black group-hover:text-purple-600 transition-colors tracking-wide">By Kirao</span>
+              <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-all duration-300">
                 <User size={16} />
               </div>
             </button>
           </div>
 
-          <p className="text-gray-400 text-xs font-medium uppercase tracking-widest">
+          <p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.3em] opacity-50">
             Minecraft Legião © 2026
           </p>
         </div>

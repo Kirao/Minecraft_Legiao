@@ -12,36 +12,36 @@ export default async function handler(
 
   try {
     const cleanHandle = handle.startsWith('@') ? handle : `@${handle}`;
-    // Adicionamos um timestamp aleatório para evitar cache agressivo do navegador/Vercel
-    const url = `https://www.youtube.com/${cleanHandle}/live?t=${Date.now()}`;
+    // Usamos a URL principal do canal para verificar se há o sinal de "LIVE" no avatar ou no banner
+    const url = `https://www.youtube.com/${cleanHandle}`;
     
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
         'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache'
       }
     });
 
     const html = await response.text();
 
-    // Nova lógica mais rigorosa:
-    // 1. Verifica se existe o player de live ativo
-    const hasLivePlayer = html.includes('yt-player-status-view-model') || html.includes('isLiveNow":true');
+    // A prova cabal de que alguém está online no YouTube sem API é procurar por:
+    // 1. "style":"LIVE" (dentro do JSON de badges)
+    // 2. "iconType":"LIVE"
+    // 3. Presença de um link que contenha "/watch?v=" E a palavra "LIVE" ou "AO VIVO" por perto.
     
-    // 2. Verifica se o texto "AO VIVO" ou "LIVE" aparece em botões de status reais
-    const hasLiveBadge = html.includes('"label":"AO VIVO"') || html.includes('"label":"LIVE"');
+    // O KronosPlaying provavelmente aparece online porque ele tem uma live agendada que o YouTube coloca em destaque.
+    // Vamos procurar especificamente por indicadores de que a live está TRANSMITINDO AGORA.
     
-    // 3. Filtros de exclusão (se tiver isso, NÃO está online)
-    const isScheduled = html.includes('Scheduled for') || html.includes('Agendado para') || html.includes('{"style":"UPCOMING"}');
-    const isFinished = html.includes('Streamed live') || html.includes('Transmitido ao vivo') || html.includes('{"style":"FINISHED"}');
+    const hasLiveBadge = html.includes('"label":"LIVE"') || html.includes('"label":"AO VIVO"');
+    const isStreaming = html.includes('{"style":"LIVE"}') || html.includes('iconType":"LIVE"');
+    
+    // Verificação de segurança: Se o canal tiver "Upcoming" ou "Agendado" com muita força, ignoramos.
+    const isUpcoming = html.includes('Upcoming') || html.includes('Agendado para');
 
-    // Só está online se tiver o player/badge e NÃO for agendado ou finalizado
-    const isOnline = (hasLivePlayer || hasLiveBadge) && !isScheduled && !isFinished;
+    // Se tiver a badge de LIVE e NÃO for agendado, as chances de estar online são de 99%
+    const isOnline = (hasLiveBadge || isStreaming) && !isUpcoming;
 
-    // Cache de apenas 30 segundos na Vercel para não dar status "preso"
-    res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate');
+    res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate');
 
     return res.status(200).json({
       online: !!isOnline,
