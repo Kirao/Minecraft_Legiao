@@ -53,7 +53,7 @@ const CREATORS: Creator[] = [
     name: 'BrunimNeets',
     imageUrl: youtubeAvatar('brunimneets'),
     youtubeUrl: 'https://www.youtube.com/@brunimneets',
-    twitchUrl: 'https://www.youtube.com/@brunimneets',
+    twitchUrl: 'https://www.twitch.tv/@brunimneets',
   },
   {
     id: '6',

@@ -39,13 +39,21 @@ export default function CreatorCard({
   useEffect(() => {
     if (!twitchUrl) return;
 
-    const username = twitchUrl.split('twitch.tv/')[1];
+    // Extrai o username corretamente, lidando com barras extras ou queries
+    const username = twitchUrl.split('twitch.tv/')[1]?.split('/')[0]?.split('?')[0];
     if (!username) return;
 
-    fetch(`/api/twitch-status?username=${username}`)
-      .then((res) => res.json())
-      .then((data) => setIsLive(Boolean(data.online)))
-      .catch(() => setIsLive(false));
+    const checkStatus = () => {
+      fetch(`/api/twitch-status?username=${username}`)
+        .then((res) => res.json())
+        .then((data) => setIsLive(Boolean(data.online)))
+        .catch(() => setIsLive(false));
+    };
+
+    checkStatus();
+    const interval = setInterval(checkStatus, 60000); // Atualiza a cada 1 minuto
+
+    return () => clearInterval(interval);
   }, [twitchUrl]);
 
   return (

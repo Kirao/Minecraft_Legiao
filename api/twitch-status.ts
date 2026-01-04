@@ -11,8 +11,13 @@ export default async function handler(
   }
 
   try {
-    const clientId = process.env.TWITCH_CLIENT_ID!;
-    const clientSecret = process.env.TWITCH_CLIENT_SECRET!;
+    const clientId = process.env.TWITCH_CLIENT_ID;
+    const clientSecret = process.env.TWITCH_CLIENT_SECRET;
+
+    if (!clientId || !clientSecret) {
+      console.error('Missing Twitch credentials');
+      return res.status(500).json({ online: false, error: 'Missing credentials' });
+    }
 
     const tokenRes = await fetch('https://id.twitch.tv/oauth2/token', {
       method: 'POST',
@@ -21,6 +26,11 @@ export default async function handler(
     });
 
     const tokenData = await tokenRes.json();
+
+    if (!tokenData.access_token) {
+      console.error('Failed to get Twitch access token', tokenData);
+      return res.status(500).json({ online: false, error: 'Auth failed' });
+    }
 
     const streamRes = await fetch(
       `https://api.twitch.tv/helix/streams?user_login=${username}`,
@@ -34,11 +44,16 @@ export default async function handler(
 
     const streamData = await streamRes.json();
 
+    if (streamData.error) {
+      console.error('Twitch API Error:', streamData);
+      return res.status(streamRes.status).json({ online: false, error: streamData.message });
+    }
+
     return res.status(200).json({
-      online: streamData.data?.length > 0,
+      online: streamData.data && streamData.data.length > 0,
     });
   } catch (error) {
-    console.error(error);
+    console.error('Twitch status handler error:', error);
     return res.status(500).json({ online: false });
   }
 }
