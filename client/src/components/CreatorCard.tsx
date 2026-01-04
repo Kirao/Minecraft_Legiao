@@ -64,16 +64,21 @@ export default function CreatorCard({
     // Lógica YouTube
     let youtubeInterval: NodeJS.Timeout;
     if (youtubeUrl) {
-      const handle = youtubeUrl.split('@')[1]?.split('/')[0]?.split('?')[0];
+      let handle = youtubeUrl.split('@')[1]?.split('/')[0]?.split('?')[0];
+      if (!handle) {
+        const parts = youtubeUrl.replace(/\/$/, '').split('/');
+        handle = parts[parts.length - 1];
+      }
+
       if (handle) {
         const checkYoutube = () => {
-          fetch(`/api/youtube-status?handle=@${handle}`)
+          fetch(`/api/youtube-status?handle=${handle}`)
             .then((res) => res.json())
             .then((data) => setIsYoutubeLive(Boolean(data.online)))
             .catch(() => setIsYoutubeLive(false));
         };
         checkYoutube();
-        youtubeInterval = setInterval(checkYoutube, 120000); // YouTube tem limites mais estritos, checar a cada 2 min
+        youtubeInterval = setInterval(checkYoutube, 60000);
       }
     }
 
@@ -88,12 +93,12 @@ export default function CreatorCard({
       <div className="relative overflow-hidden bg-gray-100 aspect-square">
         <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
           {isTwitchLive && (
-            <span className="flex items-center gap-1 bg-purple-600 text-white text-[10px] font-bold px-2 py-1 rounded-full animate-pulse">
+            <span className="flex items-center gap-1 bg-purple-600 text-white text-[10px] font-bold px-2 py-1 rounded-full animate-pulse shadow-md">
               <Twitch size={10} /> TWITCH AO VIVO
             </span>
           )}
           {isYoutubeLive && (
-            <span className="flex items-center gap-1 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-full animate-pulse">
+            <span className="flex items-center gap-1 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-full animate-pulse shadow-md">
               <Youtube size={10} /> YT AO VIVO
             </span>
           )}
@@ -117,7 +122,7 @@ export default function CreatorCard({
               href={youtubeUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className={`inline-flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 hover:scale-110 ${isYoutubeLive ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-red-600 hover:text-white'}`}
+              className={`inline-flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 hover:scale-110 ${isYoutubeLive ? 'bg-red-600 text-white shadow-lg' : 'bg-gray-100 text-gray-600 hover:bg-red-600 hover:text-white'}`}
               title="YouTube"
             >
               <Youtube size={20} />
@@ -141,7 +146,7 @@ export default function CreatorCard({
               href={twitchUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className={`inline-flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 hover:scale-110 ${isTwitchLive ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-purple-600 hover:text-white'}`}
+              className={`inline-flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 hover:scale-110 ${isTwitchLive ? 'bg-purple-600 text-white shadow-lg' : 'bg-gray-100 text-gray-600 hover:bg-purple-600 hover:text-white'}`}
               title="Twitch"
             >
               <Twitch size={20} />

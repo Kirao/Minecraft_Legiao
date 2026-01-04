@@ -11,37 +11,36 @@ export default async function handler(
   }
 
   try {
-    const apiKey = process.env.YOUTUBE_API_KEY;
+    // Limpa o handle
+    const cleanHandle = handle.startsWith('@') ? handle : `@${handle}`;
+    
+    // O YouTube redireciona /@handle/live para a transmissão ao vivo se ela existir.
+    // Se não houver live, ele redireciona para a página inicial do canal ou mostra que está offline.
+    const url = `https://www.youtube.com/${cleanHandle}/live`;
+    
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept-Language': 'en-US,en;q=0.9',
+      }
+    });
 
-    if (!apiKey) {
-      console.error('Missing YouTube API Key');
-      return res.status(500).json({ online: false, error: 'Missing API Key' });
-    }
+    const html = await response.text();
 
-    // 1. Buscar o ID do canal pelo handle
-    // O handle geralmente começa com @, mas a API pode precisar dele sem o @ ou via search
-    const searchRes = await fetch(
-      `https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${handle}&key=${apiKey}`
-    );
-    const searchData = await searchRes.json();
+    // Verificamos se no HTML existe a marcação de que a live está acontecendo.
+    // O YouTube insere "isLive":true ou "liveStreamability" no JSON de configuração da página.
+    const isOnline = html.includes('{"isLive":true}') || 
+                     html.includes('liveStreamabilityRenderer') ||
+                     (html.includes('hqdefault_live.jpg') && !html.includes('OFFLINE'));
 
-    if (!searchData.items || searchData.items.length === 0) {
-      return res.status(404).json({ online: false, error: 'Channel not found' });
-    }
-
-    const channelId = searchData.items[0].id.channelId;
-
-    // 2. Verificar se há uma live ativa para esse channelId
-    const liveRes = await fetch(
-      `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&type=video&eventType=live&key=${apiKey}`
-    );
-    const liveData = await liveRes.json();
+    // Adicionamos um cache curto para não sobrecarregar e ser rápido
+    res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate');
 
     return res.status(200).json({
-      online: liveData.items && liveData.items.length > 0,
+      online: isOnline,
     });
   } catch (error) {
-    console.error('YouTube status handler error:', error);
+    console.error('YouTube status error:', error);
     return res.status(500).json({ online: false });
   }
 }
