@@ -7,9 +7,9 @@ interface CreatorCardProps {
   youtubeUrl?: string;
   kickUrl?: string;
   twitchUrl?: string;
+  onLiveStatusChange?: (isLive: boolean) => void;
 }
 
-// Ícone customizado para Kick
 const KickIcon: FC<{ className?: string }> = ({ className }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -33,38 +33,71 @@ export default function CreatorCard({
   youtubeUrl,
   kickUrl,
   twitchUrl,
+  onLiveStatusChange,
 }: CreatorCardProps) {
-  const [isLive, setIsLive] = useState(false);
+  const [isTwitchLive, setIsTwitchLive] = useState(false);
+  const [isYoutubeLive, setIsYoutubeLive] = useState(false);
+
+  const isLive = isTwitchLive || isYoutubeLive;
 
   useEffect(() => {
-    if (!twitchUrl) return;
+    onLiveStatusChange?.(isLive);
+  }, [isLive, onLiveStatusChange]);
 
-    // Extrai o username corretamente, lidando com barras extras ou queries
-    const username = twitchUrl.split('twitch.tv/')[1]?.split('/')[0]?.split('?')[0];
-    if (!username) return;
+  useEffect(() => {
+    // Lógica Twitch
+    let twitchInterval: NodeJS.Timeout;
+    if (twitchUrl) {
+      const username = twitchUrl.split('twitch.tv/')[1]?.split('/')[0]?.split('?')[0];
+      if (username) {
+        const checkTwitch = () => {
+          fetch(`/api/twitch-status?username=${username}`)
+            .then((res) => res.json())
+            .then((data) => setIsTwitchLive(Boolean(data.online)))
+            .catch(() => setIsTwitchLive(false));
+        };
+        checkTwitch();
+        twitchInterval = setInterval(checkTwitch, 60000);
+      }
+    }
 
-    const checkStatus = () => {
-      fetch(`/api/twitch-status?username=${username}`)
-        .then((res) => res.json())
-        .then((data) => setIsLive(Boolean(data.online)))
-        .catch(() => setIsLive(false));
+    // Lógica YouTube
+    let youtubeInterval: NodeJS.Timeout;
+    if (youtubeUrl) {
+      const handle = youtubeUrl.split('@')[1]?.split('/')[0]?.split('?')[0];
+      if (handle) {
+        const checkYoutube = () => {
+          fetch(`/api/youtube-status?handle=@${handle}`)
+            .then((res) => res.json())
+            .then((data) => setIsYoutubeLive(Boolean(data.online)))
+            .catch(() => setIsYoutubeLive(false));
+        };
+        checkYoutube();
+        youtubeInterval = setInterval(checkYoutube, 120000); // YouTube tem limites mais estritos, checar a cada 2 min
+      }
+    }
+
+    return () => {
+      if (twitchInterval) clearInterval(twitchInterval);
+      if (youtubeInterval) clearInterval(youtubeInterval);
     };
-
-    checkStatus();
-    const interval = setInterval(checkStatus, 60000); // Atualiza a cada 1 minuto
-
-    return () => clearInterval(interval);
-  }, [twitchUrl]);
+  }, [twitchUrl, youtubeUrl]);
 
   return (
-    <div className="group flex flex-col bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300">
-      {/* Imagem */}
+    <div className={`group flex flex-col bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 ${isLive ? 'ring-2 ring-red-500' : ''}`}>
       <div className="relative overflow-hidden bg-gray-100 aspect-square">
-        {isLive && (
-          <span className="absolute top-2 left-2 z-10 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse">
-            🔴 AO VIVO
-          </span>
-        )}
+        <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
+          {isTwitchLive && (
+            <span className="flex items-center gap-1 bg-purple-600 text-white text-[10px] font-bold px-2 py-1 rounded-full animate-pulse">
+              <Twitch size={10} /> TWITCH AO VIVO
+            </span>
+          )}
+          {isYoutubeLive && (
+            <span className="flex items-center gap-1 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-full animate-pulse">
+              <Youtube size={10} /> YT AO VIVO
+            </span>
+          )}
+        </div>
 
         <img
           src={imageUrl}
@@ -73,7 +106,6 @@ export default function CreatorCard({
         />
       </div>
 
-      {/* Infos */}
       <div className="flex flex-col items-center justify-center gap-3 p-4">
         <h3 className="text-center text-lg font-bold text-gray-900 line-clamp-2">
           {name}
@@ -85,7 +117,7 @@ export default function CreatorCard({
               href={youtubeUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-600 hover:bg-red-600 hover:text-white transition-all duration-200 hover:scale-110"
+              className={`inline-flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 hover:scale-110 ${isYoutubeLive ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-red-600 hover:text-white'}`}
               title="YouTube"
             >
               <Youtube size={20} />
@@ -109,7 +141,7 @@ export default function CreatorCard({
               href={twitchUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-600 hover:bg-purple-600 hover:text-white transition-all duration-200 hover:scale-110"
+              className={`inline-flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 hover:scale-110 ${isTwitchLive ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-purple-600 hover:text-white'}`}
               title="Twitch"
             >
               <Twitch size={20} />
