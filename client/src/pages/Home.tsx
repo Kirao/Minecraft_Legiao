@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CreatorCard from '@/components/CreatorCard';
-import { MessageSquare, User } from 'lucide-react';
+import { MessageSquare, User, X } from 'lucide-react';
 
 interface Creator {
   id: string;
@@ -109,11 +109,9 @@ export default function Home() {
       </header>
 
       <main className="container py-12">
-        <motion.div 
-          layout
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
-        >
-          <AnimatePresence mode='popLayout'>
+        {/* Removemos o layout prop do container pai para evitar bugs de scroll */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          <AnimatePresence mode='popLayout' initial={false}>
             {sortedAndFilteredCreators.map((creator) => (
               <motion.div
                 key={creator.id}
@@ -121,7 +119,10 @@ export default function Home() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.3, type: "spring", stiffness: 260, damping: 20 }}
+                transition={{ 
+                  duration: 0.2, 
+                  layout: { duration: 0.3, type: "spring", stiffness: 300, damping: 30 } 
+                }}
               >
                 <CreatorCard 
                   {...creator} 
@@ -130,7 +131,7 @@ export default function Home() {
               </motion.div>
             ))}
           </AnimatePresence>
-        </motion.div>
+        </div>
 
         {sortedAndFilteredCreators.length === 0 && (
           <motion.div 
@@ -154,7 +155,7 @@ export default function Home() {
       <footer className="bg-white border-t border-gray-100 mt-24">
         <div className="container py-12 flex flex-col items-center gap-6">
           <button 
-            onClick={() => setShowContact(!showContact)}
+            onClick={() => setShowContact(true)}
             className="group flex items-center gap-3 px-6 py-3 bg-gray-50 hover:bg-gray-100 rounded-2xl transition-all duration-300 border border-gray-100"
           >
             <span className="text-gray-600 font-bold group-hover:text-purple-600 transition-colors">By Kirao</span>
@@ -163,56 +164,76 @@ export default function Home() {
             </div>
           </button>
 
-          <AnimatePresence>
-            {showContact && (
-              <motion.div
-                initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                className="w-full max-w-sm bg-white rounded-3xl p-6 shadow-2xl border border-purple-100 relative overflow-hidden"
-              >
-                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-purple-500 to-pink-500"></div>
-                <div className="flex items-center gap-4">
-                  <div className="relative">
-                    <img 
-                      src="https://github.com/Kirao.png" 
-                      alt="Kirao" 
-                      className="w-16 h-16 rounded-2xl object-cover shadow-md border-2 border-white"
-                    />
-                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></div>
-                  </div>
-                  <div>
-                    <h4 className="text-xl font-bold text-gray-900">Kirao</h4>
-                    <p className="text-purple-600 text-sm font-semibold">Desenvolvedor</p>
-                  </div>
-                </div>
-                
-                <div className="mt-6 space-y-3">
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
-                    <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600">
-                      <MessageSquare size={20} />
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">Discord</p>
-                      <p className="text-gray-900 font-mono font-bold">kirao_</p>
-                    </div>
-                  </div>
-                  
-                  <div className="p-4 bg-purple-50 rounded-xl border border-purple-100">
-                    <p className="text-sm text-purple-800 font-medium leading-relaxed">
-                      Precisa de ajuda com o site ou tem alguma sugestão? Me chama no Discord! 🚀
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
           <p className="text-gray-400 text-xs font-medium uppercase tracking-widest">
             Minecraft Legião © 2026
           </p>
         </div>
       </footer>
+
+      {/* Modal de Contato Flutuante (Overlay) */}
+      <AnimatePresence>
+        {showContact && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowContact(false)}
+              className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[60]"
+            />
+            
+            {/* Modal */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20, x: '-50%' }}
+              animate={{ opacity: 1, scale: 1, y: 0, x: '-50%' }}
+              exit={{ opacity: 0, scale: 0.9, y: 20, x: '-50%' }}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-white rounded-[2.5rem] p-8 shadow-2xl z-[70] border border-purple-100 overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-purple-500 to-pink-500"></div>
+              
+              <button 
+                onClick={() => setShowContact(false)}
+                className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600"
+              >
+                <X size={20} />
+              </button>
+
+              <div className="flex flex-col items-center text-center">
+                <div className="relative mb-4">
+                  <img 
+                    src="https://github.com/Kirao.png" 
+                    alt="Kirao" 
+                    className="w-24 h-24 rounded-[2rem] object-cover shadow-xl border-4 border-white"
+                  />
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 border-4 border-white rounded-full"></div>
+                </div>
+                
+                <h4 className="text-2xl font-black text-gray-900">Kirao</h4>
+                <p className="text-purple-600 font-bold text-sm uppercase tracking-widest">Desenvolvedor</p>
+                
+                <div className="w-full mt-8 space-y-4">
+                  <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100 text-left">
+                    <div className="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
+                      <MessageSquare size={24} />
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-gray-400 font-black uppercase tracking-tighter">Discord</p>
+                      <p className="text-gray-900 font-mono font-bold text-lg">kirao_</p>
+                    </div>
+                  </div>
+                  
+                  <div className="p-5 bg-purple-50 rounded-2xl border border-purple-100">
+                    <p className="text-sm text-purple-900 font-semibold leading-relaxed">
+                      Precisa de ajuda com o site ou tem alguma sugestão? Me chama no Discord! 🚀
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
